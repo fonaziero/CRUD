@@ -42,7 +42,28 @@ public class clientsService {
 		return new ClientsDTO(entity);
 	}
 	
+	@Transactional
+	public ClientsDTO update (Long id, ClientsDTO clients) {
+		
+		try {
+			Clients entity = repository.getOne(id);
+			convertDtoToEntity(clients, entity);
+			entity = repository.save(entity);
+			return new ClientsDTO(entity);
+			
+		} catch (Exception e) {
+			throw new Error(e) ;
+		}
+	}
 	
+
+	public void delete (Long id) {
+		try {
+			repository.deleteById(id);
+		}catch (Exception e) {
+			throw new Error(e);
+		}
+	}
 	
 	
 	public void convertDtoToEntity(ClientsDTO clients, Clients entity ) {
