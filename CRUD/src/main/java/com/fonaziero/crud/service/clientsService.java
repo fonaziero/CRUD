@@ -3,6 +3,7 @@ package com.fonaziero.crud.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fonaziero.crud.dto.ClientsDTO;
 import com.fonaziero.crud.entity.Clients;
 import com.fonaziero.crud.repository.ClientsRepository;
+import com.fonaziero.crud.service.execption.EntityNotFoundExecption;
+
 
 @Service
 public class clientsService {
@@ -25,20 +28,20 @@ public class clientsService {
 	}
 	
 	@Transactional(readOnly = true)
-	public Optional<ClientsDTO> findAllById(Long id) {	
-		Optional<Clients> list = repository.findById(id);
-		return list.map(x -> new ClientsDTO(x));
+	public ClientsDTO findAllById(Long id) {	
+		
+		Optional<Clients> client = repository.findById(id);
+		Clients entity = client.orElseThrow(() -> new EntityNotFoundExecption("Entity Not Found"));
+		
+		return  new ClientsDTO(entity);
 	}
 	
 	@Transactional
 	public ClientsDTO insert(ClientsDTO clients) {
 		
 		Clients entity = new Clients();
-		
 		convertDtoToEntity(clients, entity);
-		
 		entity = repository.save(entity);
-		
 		return new ClientsDTO(entity);
 	}
 	
@@ -51,17 +54,17 @@ public class clientsService {
 			entity = repository.save(entity);
 			return new ClientsDTO(entity);
 			
-		} catch (Exception e) {
-			throw new Error(e) ;
+		} catch (EntityNotFoundExecption e) {
+			throw new EntityNotFoundExecption("Id not found" + id);
 		}
 	}
-	
+
 
 	public void delete (Long id) {
 		try {
 			repository.deleteById(id);
-		}catch (Exception e) {
-			throw new Error(e);
+		}catch (EmptyResultDataAccessException e) {
+			throw new EntityNotFoundExecption("Id not found " + id);
 		}
 	}
 	
